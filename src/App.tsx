@@ -4,6 +4,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import {DialogContent, IconButton} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
+import Draggable from 'react-draggable';
 
 // CSS import
 import './App.css';
@@ -11,10 +12,11 @@ import './App.css';
 // Asset imports
 import hexagonBlack from './assets/hexagon_black.svg';
 import hexagonWhite from './assets/hexagon_white.svg';
-import hexagonPurple from './assets/hexagon_purple.svg';
-import hexagonBorder from './assets/hexagon_border.svg';
+import hexagonPlains1 from './assets/HexMapPlains1.png';
+import hexagonMountain from './assets/HexMapMountain.png';
+import hexagonForest1 from  './assets/HexMapForest1.png';
 
-const radiusOutside = 60;
+const radiusOutside = 120;
 const radiusInside = radiusOutside / (2 / Math.sqrt(3));
 const cSizeX = 6;
 const cSizeY = 7;
@@ -22,7 +24,8 @@ const cSizeY = 7;
 enum HexagonType {
     BLACK = 'black',
     WHITE = 'white',
-    PURPLE = 'purple',
+    PLAINS1 = 'purple',
+    FOREST1 = 'green',
     NONE = 'border',
 }
 
@@ -30,28 +33,18 @@ enum HexagonType {
 const hexagonImages = {
     [HexagonType.BLACK]: hexagonBlack,
     [HexagonType.WHITE]: hexagonWhite,
-    [HexagonType.PURPLE]: hexagonPurple,
-    [HexagonType.NONE]: hexagonBorder,
+    [HexagonType.PLAINS1]: hexagonPlains1,
+    [HexagonType.FOREST1]: hexagonForest1,
+    [HexagonType.NONE]: hexagonMountain,
 }
-
-const defaultStyle = {
-    position: "absolute",
-    padding: 0,
-};
 
 function imageSrcFromType(type: HexagonType) {
     return hexagonImages[type] || hexagonImages[HexagonType.NONE];
 }
 
 const getStyledImageDiv = (type: HexagonType, positionX: number, positionY: number) => {
-    const style = {
-        ...defaultStyle,
-        left: positionX,
-        top: positionY
-    };
-
-    return (
-        <div style={style}>
+        return (
+        <div style={{position: "absolute", left: positionX, top: positionY}}>
             <img className="hexagon" src={imageSrcFromType(type)} alt={`hexagon ${type}`}/>
         </div>
     );
@@ -82,19 +75,34 @@ const getHexagonPropertiesDialog = (open: boolean, handleClose: (event: React.Mo
     );
 }
 
+function useHexMapDrag() {
+    const [isDragging, setIsDragging] = useState(false);
+
+    const handleDragStart = () => setIsDragging(true);
+    const handleDragStop = () => setIsDragging(false);
+    const handleMouseInteraction = (event: React.MouseEvent) => event.preventDefault();
+
+    return { isDragging, handleDragStart, handleDragStop, handleMouseInteraction };
+}
+
 // Hexagon properties
 type HexagonProps = {
     positionX: number;
     positionY: number;
     elementX: number;
     elementY: number;
-    type: HexagonType // add more types as needed
+    type: HexagonType;
+    isDragging: boolean;
 };
 
-function Hexagon({ positionX, positionY, elementX, elementY, type }: HexagonProps) {
+function Hexagon({ positionX, positionY, elementX, elementY, type, isDragging }: HexagonProps & { isDragging: boolean }) {
     const [open, setOpen] = useState(false);
 
-    const handleClick = () => {
+    const handleClick = (event: React.MouseEvent) => {
+        if (isDragging) {
+            event.stopPropagation();
+            return;
+        }
         setOpen(true);
     };
 
@@ -106,23 +114,7 @@ function Hexagon({ positionX, positionY, elementX, elementY, type }: HexagonProp
     return (
         <div onClick={handleClick}>
             {getStyledImageDiv(type, positionX, positionY)}
-            {getHexagonPropertiesDialog(open, handleClose, { positionX, positionY, elementX, elementY, type })}
-        </div>
-    );
-}
-
-type HexMapProps = {
-    sizeX: number;
-    sizeY: number;
-    hexagons: HexagonProps[]; // add type for each Hexagon
-};
-
-function HexMap({ hexagons }: HexMapProps) {
-    return (
-        <div>
-            {hexagons.map((hexagon, index) =>
-                <Hexagon key={index} {...hexagon} />
-            )}
+            {getHexagonPropertiesDialog(open, handleClose, {isDragging,positionX, positionY, elementX, elementY, type })}
         </div>
     );
 }
@@ -134,21 +126,32 @@ function computeHexPositions(_: HexagonProps[],index: number) {
     const positionY = elementY * radiusOutside * 2 - ((elementY % (cSizeY + 1)) * 0.5 * radiusOutside);
 
     const type = HexagonType.NONE;
-    return { positionX, positionY, elementX, elementY, type };
+    return { positionX, positionY, elementX, elementY, type , isDragging: false};
 }
 
 function debugCheckerboard(_: HexagonProps[]) {
     for (let index = 0; index < _.length; index++) {
-        _[index].type = index % 2 === 0 ? HexagonType.BLACK : HexagonType.WHITE;
+        _[index].type = index % 2 === 0 ? HexagonType.NONE : HexagonType.PLAINS1;
     }
 }
 
 function App() {
+    const { isDragging, handleDragStart, handleDragStop, handleMouseInteraction } = useHexMapDrag();
     const hexagons = [...Array(cSizeX * cSizeY)].map(computeHexPositions);
     debugCheckerboard(hexagons);
+
     return (
         <div>
-            <HexMap sizeX={cSizeX} sizeY={cSizeY} hexagons={hexagons} />
+            <Draggable onStart={handleDragStart} onStop={handleDragStop}>
+                <div
+                    onMouseDown={handleMouseInteraction}
+                    onMouseUp={handleMouseInteraction}
+                    onMouseMove={handleMouseInteraction}>
+                    {hexagons.map((hexagon, index) =>
+                        <Hexagon key={index} {...hexagon} isDragging={isDragging}/>
+                    )}
+                </div>
+            </Draggable>
         </div>
     );
 }
