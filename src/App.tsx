@@ -15,6 +15,7 @@ import hexagonWhite from './assets/hexagon_white.svg';
 import hexagonPlains1 from './assets/HexMapPlains1.png';
 import hexagonMountain from './assets/HexMapMountain.png';
 import hexagonForest1 from  './assets/HexMapForest1.png';
+import hexagonForrest1Path1 from './assets/HexMapForest1Path000000240.png';
 
 const radiusOutside = 120;
 const radiusInside = radiusOutside / (2 / Math.sqrt(3));
@@ -26,6 +27,7 @@ enum HexagonType {
     WHITE = 'white',
     PLAINS1 = 'purple',
     FOREST1 = 'green',
+    FOREST1PATH1 = 'test',
     NONE = 'border',
 }
 
@@ -35,6 +37,7 @@ const hexagonImages = {
     [HexagonType.WHITE]: hexagonWhite,
     [HexagonType.PLAINS1]: hexagonPlains1,
     [HexagonType.FOREST1]: hexagonForest1,
+    [HexagonType.FOREST1PATH1]: hexagonForrest1Path1,
     [HexagonType.NONE]: hexagonMountain,
 }
 
@@ -132,6 +135,8 @@ function computeHexPositions(_: HexagonProps[],index: number) {
 function debugCheckerboard(_: HexagonProps[]) {
     for (let index = 0; index < _.length; index++) {
         _[index].type = index % 2 === 0 ? HexagonType.NONE : HexagonType.PLAINS1;
+        if(index % 3 === 0)  {_[index].type = HexagonType.FOREST1;}
+        if(index % 4 === 0)  {_[index].type = HexagonType.FOREST1PATH1;}
     }
 }
 
