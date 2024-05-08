@@ -1,4 +1,4 @@
-# D&D HexPap-Project
+# D&D HexMap-Project
 ## Project Outline
 https://1drv.ms/o/s!Apbm7NCpu949gc5hF6aZUqgSZOxuEg?e=Tvwjlh
 ## Project Timeline
