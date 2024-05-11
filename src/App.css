@@ -17,19 +17,28 @@
 }
 
 .map-frame {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: hidden;
 }
 
-.map-frame::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: 240px solid #242424;
+.no-scrollbars {
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+}
+.no-scrollbars::-webkit-scrollbar {
+  width: 1px;
+}
+.no-scrollbars::-webkit-scrollbar-track {
+  background: transparent;
+}
+.no-scrollbars::-webkit-scrollbar-thumb {
+  background-color: transparent;
+}
+
+.no-scrollbars::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
 }
 
 /*# sourceMappingURL=App.css.map */
